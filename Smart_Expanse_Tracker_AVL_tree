@@ -3,24 +3,26 @@
 #include <stdbool.h>
 #include <string.h>
 #include <time.h>
+#include <windows.h>
+#include <math.h>
 
+// Constants used repeatatively in program 
 #define MAX_DATE_LENGTH 11
 #define MAX_DESCRIPTION_LENGTH 100
 #define MAX_CATEGORY_LENGTH 50
 #define MAX_ID 9999
 
+// Prototypes declaration
 struct AVLNode;
-
 struct AVLNode *rightRotate(struct AVLNode *y);
 struct AVLNode *leftRotate(struct AVLNode *x);
 int getBalance(struct AVLNode *node);
-int max(int a, int b);
 int height(struct AVLNode *node);
 struct AVLNode *newNode(int id, char *date, char *category, float amount, char *description);
 void getCurrentDate(char *date);
 struct AVLNode *insertNode(struct AVLNode *node, bool usedIDs[], char *date, char *category, float amount, char *description);
 void printExpenses(struct AVLNode *root);
-void searchAndPrintExpenses(struct AVLNode *root, char *date, char *category);
+void searchAndPrintExpenses(struct AVLNode   *root, char *date, char *category);
 int generateUniqueID(bool usedIDs[]);
 struct AVLNode *searchExpenseById(struct AVLNode *root, int id);
 struct AVLNode *deleteNode(struct AVLNode *root, bool usedIDs[], int idToDelete);
@@ -29,6 +31,7 @@ struct AVLNode *loadExpensesFromFile(FILE *fp, int *idCounter);
 void saveExpensesToFile(struct AVLNode *root, FILE *fp);
 void freeAVLTree(struct AVLNode *root);
 
+// Node structure of AVL tree
 struct AVLNode {
     int id;
     char date[MAX_DATE_LENGTH];
@@ -40,8 +43,38 @@ struct AVLNode {
     int height;
 };
 
+// function for laoding animation
+void load(){
+    system("cls");
+    SetConsoleTitle(" Smart Expense Tracker ");//setting console title to Village Governance System
+    system("Color 04");//setting color of text to red
+    printf("\n\n\n\n\n\n\n\n\n\n");
+    printf("\t\t\t\t\t\t LOADING....\n\n");
+    printf("\t\t\t\t");
+    char x = 219;// A Special character printing sequence
+    int i;
+    for( i=0;i<35;i++)
+     {
+      printf("%c",x);
+      if(i<10)
+        Sleep(300);// Stops execution of the system for 300 ms
+      if(i>=10&&i<20)
+        Sleep(150);
+      if(i>=10)
+        Sleep(25);
+     }
+    system("cls");// For clearing console
+    printf("\n\n\n\n");
+    system("Color 02");// Setting text color to green after loading happens
+    printf("\t\t\t\t------ Smart Expense Tracker ------- \n\n\n");
+    Sleep(1000);
+}
+
 int main() {
-//	printf("Reach Here 1");
+
+	load();
+	system("cls");
+	system("Color 00");
     struct AVLNode *root = NULL;
     int idCounter = 0;
     int choice;
@@ -53,14 +86,13 @@ int main() {
 
     bool usedIDs[MAX_ID + 1] = {false};
     FILE *fp;
-//	printf("Reach Here 2");
+    
     fp = fopen("expenses.txt", "r");
     if (fp != NULL) {
-    //	printf("Reach Here 2.1");
         root = loadExpensesFromFile(fp, &idCounter);
         fclose(fp);
     }
-//	printf("Reach Here 3");
+
     printf("********* Smart Expense Tracker using AVL tree *********\n");
 
     do {
@@ -85,6 +117,7 @@ int main() {
                 getchar();
                 fgets(description, sizeof(description), stdin);
                 description[strcspn(description, "\n")] = '\0';
+			
                 int dateChoice;
                 printf("Do you want to enter the current date (1) or a specific date (2)? ");
                 scanf("%d", &dateChoice);
@@ -98,6 +131,14 @@ int main() {
                     getCurrentDate(date);
                 }
                 root = insertNode(root, usedIDs, date, category, amount, description);
+                fp = fopen("expenses.txt", "w");
+                if (fp != NULL) {
+                    saveExpensesToFile(root, fp);
+                    fclose(fp);
+                    printf("Expenses saved to file.\n");
+                } else {
+                    printf("Error: Unable to save expenses to file.\n");
+                }
                 break;
             case 2:
                 printf("Expenses:\n");
@@ -114,6 +155,14 @@ int main() {
                 } else {
                     root = deleteNode(root, usedIDs, idToDelete);
                     printf("Expense with ID %d deleted successfully.\n", idToDelete);
+                }
+                fp = fopen("expenses.txt", "w");
+                if (fp != NULL) {
+                    saveExpensesToFile(root, fp);
+                    fclose(fp);
+                    printf("Expenses saved to file.\n");
+                } else {
+                    printf("Error: Unable to save expenses to file.\n");
                 }
                 break;
             case 4:
@@ -136,13 +185,35 @@ int main() {
                 searchAndPrintExpenses(root, date, category);
                 break;
             case 6:
-                printf("Exiting...\n");
+            	system("cls");
+                fp = fopen("expenses.txt", "w");
+                if (fp != NULL) {
+                    saveExpensesToFile(root, fp);
+                    fclose(fp);
+                    printf("Expenses saved to file.\n");
+                } else {
+                    printf("Error: Unable to save expenses to file.\n");
+                }
+                printf("\n\n\n\n\n\n\n");
+                printf("\t\t\t\tPreparing for Exiting The System ...\n\n\n");
+                system("Color 04");//Again setting color of text to red
+                Sleep(1000);
+                printf("\t\t\t\t EXITING : ");
+                int i;
+                for(i =0;i<5;i++)
+                {
+                    printf(" *_* ");
+                    Sleep(1000);
+                }
+                printf("\n\n\n\n\n");
+                system("cls");
                 break;
             default:
                 printf("Invalid choice. Please try again.\n");
         }
     } while (choice != 6);
 
+	// freeing memory resources
     printf("Before freeing AVL tree\n");
     freeAVLTree(root);
     printf("Press Enter to exit...\n");
@@ -150,6 +221,7 @@ int main() {
     return 0;
 }
 
+// Right rotate tree
 struct AVLNode *rightRotate(struct AVLNode *y) {
     if (y == NULL)
         return y;
@@ -162,6 +234,7 @@ struct AVLNode *rightRotate(struct AVLNode *y) {
     return x;
 }
 
+// Left rotate tree
 struct AVLNode *leftRotate(struct AVLNode *x) {
     if (x == NULL)
         return x;
@@ -174,22 +247,21 @@ struct AVLNode *leftRotate(struct AVLNode *x) {
     return y;
 }
 
+// Calculating balance factor 
 int getBalance(struct AVLNode *node) {
     if (node == NULL)
         return 0;
     return height(node->left) - height(node->right);
 }
 
-int max(int a, int b) {
-    return (a > b) ? a : b;
-}
-
+// finding height of the tree
 int height(struct AVLNode *node) {
     if (node == NULL)
         return 0;
     return node->height;
 }
 
+// function for creating the new AVL tree node
 struct AVLNode *newNode(int id, char *date, char *category, float amount, char *description) {
     struct AVLNode *node = (struct AVLNode *)malloc(sizeof(struct AVLNode));
     node->id = id;
@@ -203,12 +275,14 @@ struct AVLNode *newNode(int id, char *date, char *category, float amount, char *
     return node;
 }
 
+// Finding the current date 
 void getCurrentDate(char *date) {
     time_t now = time(NULL);
     struct tm *t = localtime(&now);
     sprintf(date, "%02d-%02d-%04d", t->tm_mday, t->tm_mon + 1, t->tm_year + 1900);
 }
 
+// Inserting node into new node
 struct AVLNode *insertNode(struct AVLNode *node, bool usedIDs[], char *date, char *category, float amount, char *description) {
     if (node == NULL)
         return newNode(generateUniqueID(usedIDs), date, category, amount, description);
@@ -238,14 +312,16 @@ struct AVLNode *insertNode(struct AVLNode *node, bool usedIDs[], char *date, cha
     return node;
 }
 
+// extracting the expenses and displaying  by inorder
 void printExpenses(struct AVLNode *root) {
     if (root != NULL) {
-        printExpenses(root->left);
+        printExpenses(root->left);  
         printf("%d\t\t%s\t\t%s\t\t\t%.2f\t\t%s\n", root->id, root->date, root->category, root->amount, root->description);
         printExpenses(root->right);
     }
 }
 
+// Search and print expenses
 void searchAndPrintExpenses(struct AVLNode *root, char *date, char *category) {
     if (root != NULL) {
         searchAndPrintExpenses(root->left, date, category);
@@ -268,7 +344,7 @@ void searchAndPrintExpenses(struct AVLNode *root, char *date, char *category) {
     }
 }
 
-
+// random id generator
 int generateUniqueID(bool usedIDs[]) {
     int id;
     do {
@@ -368,6 +444,8 @@ struct AVLNode *deleteNode(struct AVLNode *root, bool usedIDs[], int idToDelete)
     return root;
 }
 
+
+
 struct AVLNode *minValueNode(struct AVLNode *node) {
     struct AVLNode *current = node;
     while (current && current->left != NULL)
@@ -400,8 +478,6 @@ struct AVLNode *loadExpensesFromFile(FILE *fp, int *idCounter) {
 
     return root;
 }
-
-
 void saveExpensesToFile(struct AVLNode *root, FILE *fp) {
     if (root != NULL) {
         saveExpensesToFile(root->left, fp);
