@@ -32,8 +32,6 @@ The application also includes a loading animation and a user-friendly console in
 - **Search for Expenses**: Provide a date and category to find specific records.
 - **Save and Exit**: Save changes to the text file before exiting the application.
 
-# 📄 License
-This project is licensed under the MIT License.
 
 # 🤝 Contributing
 Contributions are welcome! Please fork the repository and submit pull requests for any improvements or bug fixes.
